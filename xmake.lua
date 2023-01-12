@@ -1,79 +1,41 @@
 add_rules("mode.debug", "mode.release")
 
+package("ads")
+    set_sourcedir(path.join(os.scriptdir(), "3rdparty/Qt-Advanced-Docking-System"))
+    set_policy("package.install_always", true)
+    on_install(function (package)
+        print(get_config("mode")) 
+        package:config_set("mode",get_config("mode"))
+        package:config_set("debug", is_mode("debug"))
+        print(package:configs())
+        import("package.tools.xmake").install(package)
+        os.cp("src/*.h",package:installdir("include")) 
+    end)
+package_end()  
+
+add_requires("ads")
+add_requires("nlohmann_json", {alias="json"})
+add_includedirs("src/", "src/headers")
+
 target("Tests")
+    add_packages("ads")
+    add_packages("json")
     add_rules("qt.widgetapp")
-    add_headerfiles("src/*.h")
-    add_files("src/*.cpp")
-    add_files("src/mainwindow.ui")
-    -- add files with Q_OBJECT meta (only for qt.moc)
-    add_files("src/mainwindow.h")
-
---
--- If you want to known more usage about xmake, please see https://xmake.io
---
--- ## FAQ
---
--- You can enter the project directory firstly before building project.
---
---   $ cd projectdir
---
--- 1. How to build project?
---
---   $ xmake
---
--- 2. How to configure project?
---
---   $ xmake f -p [macosx|linux|iphoneos ..] -a [x86_64|i386|arm64 ..] -m [debug|release]
---
--- 3. Where is the build output directory?
---
---   The default output directory is `./build` and you can configure the output directory.
---
---   $ xmake f -o outputdir
---   $ xmake
---
--- 4. How to run and debug target after building project?
---
---   $ xmake run [targetname]
---   $ xmake run -d [targetname]
---
--- 5. How to install target to the system directory or other output directory?
---
---   $ xmake install
---   $ xmake install -o installdir
---
--- 6. Add some frequently-used compilation flags in xmake.lua
---
--- @code
---    -- add debug and release modes
---    add_rules("mode.debug", "mode.release")
---
---    -- add macro defination
---    add_defines("NDEBUG", "_GNU_SOURCE=1")
---
---    -- set warning all as error
---    set_warnings("all", "error")
---
---    -- set language: c99, c++11
---    set_languages("c99", "c++11")
---
---    -- set optimization: none, faster, fastest, smallest
---    set_optimize("fastest")
---
---    -- add include search directories
---    add_includedirs("/usr/include", "/usr/local/include")
---
---    -- add link libraries and search directories
---    add_links("tbox")
---    add_linkdirs("/usr/local/lib", "/usr/lib")
---
---    -- add system link libraries
---    add_syslinks("z", "pthread")
---
---    -- add compilation and link flags
---    add_cxflags("-stdnolib", "-fno-strict-aliasing")
---    add_ldflags("-L/usr/local/lib", "-lpthread", {force = true})
---
--- @endcode
---
-
+    add_headerfiles("src/headers/*.h")
+    add_files("src/sources/*.cpp")
+    -- for automoc
+    add_files("src/headers/*.h")
+    -- for autouic
+    add_files("src/ui/*.ui")
+    -- for autorcc
+    add_files("src/*.qrc")
+    add_frameworks("QtMultiMedia","QtGui")
+    -- assets
+    before_build(function (target)
+        os.cp("$(project_dir)/src/assets", target:targetdir().."/")
+    end
+    )
+    before_install(function (target)
+        os.cp("$(project_dir)/src/assets", target:installdir().."bin/")
+    end
+    )

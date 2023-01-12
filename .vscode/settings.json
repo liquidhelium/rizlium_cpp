@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.fsh": "glsl",
+        "functional": "cpp"
+    }
+}
