@@ -29,7 +29,7 @@ target("Tests")
     add_files("src/ui/*.ui")
     -- for autorcc
     add_files("src/*.qrc")
-    add_frameworks("QtMultiMedia","QtGui")
+    add_frameworks("QtMultiMedia","QtGui", "QtBase", "QtWidgets")
     -- assets
     before_build(function (target)
         os.cp("$(project_dir)/src/assets", target:targetdir().."/")

@@ -2,6 +2,9 @@
 .xmake/
 build/
 
+# clangd cache
+*.idx
+
 # install
 install/
 

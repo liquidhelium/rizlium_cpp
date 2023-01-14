@@ -1,5 +1,8 @@
 #include "GameView.h"
+#include "QtMultimedia/qaudio.h"
 #include "ui_GameWindow.h"
+#include <QAudioOutPut>
+#include <QFile>
 
 RizPlayer* GameView::player()
 {
@@ -25,17 +28,15 @@ GameView::GameView(QWidget* parent)
     RizChart rizChart;
     rizTypes::from_json(chart, rizChart);
     auto pl = new QMediaPlayer();
-    auto ct = QMediaContent(QUrl("qrc:///assets/assets/take.wav"));
-    if (ct.isNull())
-        qDebug() << "?";
-    pl->setMedia(ct);
-    pl->setVolume(1);
+    auto ct = QUrl("qrc:///assets/assets/take.wav");
+    pl->setSource(ct);
+    pl->audioOutput()->setVolume(QAudio::convertVolume(0.01, QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale));
     pl->play();
     player->player = pl;
     player->setChart(rizChart);
-    if (pl->isAudioAvailable())
+    if (!pl->hasAudio())
         qDebug() << "?";
-    QObject::connect(pl, &QMediaPlayer::audioAvailableChanged,player, & RizPlayer::start);
+    QObject::connect(pl, &QMediaPlayer::hasAudioChanged,player, & RizPlayer::start);
 }
 
 void GameView::moveSliderByTime(float time)
